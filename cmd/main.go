@@ -16,7 +16,7 @@ func main() {
 		bot.WithDefaultHandler(handler),
 	}
 
-	tgBot, err := bot.New("5858864198:AAHNKHhpXC2yZ9ZPHhjjnBlRk-y27LGoQ5Y", opts...)
+	tgBot, err := bot.New("", opts...)
 	if err != nil {
 		panic(err)
 	}
