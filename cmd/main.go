@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/px2x/infrastructure-tg-notifier/config"
 	"github.com/px2x/infrastructure-tg-notifier/internal/app"
+	"github.com/px2x/infrastructure-tg-notifier/internal/scheduler"
 	"github.com/px2x/infrastructure-tg-notifier/internal/tgbot"
 	"log"
 	"os"
@@ -21,6 +22,7 @@ func main() {
 
 	service := app.NewApp(cfg)
 	tgbot.Run(&ctx, service)
+	scheduler.Run(&ctx, service)
 
 	forever := make(chan bool)
 	<-forever

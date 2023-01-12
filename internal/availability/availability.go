@@ -1,7 +1,6 @@
 package availability
 
 import (
-	"log"
 	"net/http"
 )
 
@@ -14,7 +13,7 @@ func CheckAvailability(url string) bool {
 
 	response, err := client.Do(request)
 	if err != nil {
-		log.Fatalln(err)
+		return false
 	}
 
 	if response.StatusCode == 200 {
