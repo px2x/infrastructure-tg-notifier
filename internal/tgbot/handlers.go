@@ -21,7 +21,6 @@ func (passer *DataPasser) helpHandler(ctx context.Context, b *bot.Bot, update *m
 }
 
 func (passer *DataPasser) getIdHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	passer.app.Message <- "test"
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   "ID этого чата \n" + strconv.Itoa(update.Message.Chat.ID),

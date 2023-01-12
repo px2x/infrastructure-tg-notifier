@@ -31,5 +31,16 @@ func Run(ctx *context.Context, app *app.App) {
 
 	//tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/help", bot.MatchTypeExact, helpHandler)
 
-	tgBot.Start(*ctx)
+	go tgBot.Start(*ctx)
+
+	go func() {
+		for message := range app.Message {
+			if len(message.Payload) > 0 {
+				tgBot.SendMessage(*ctx, &bot.SendMessageParams{
+					ChatID: message.ChatID,
+					Text:   message.Payload,
+				})
+			}
+		}
+	}()
 }

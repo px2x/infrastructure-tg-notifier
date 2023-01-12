@@ -22,6 +22,7 @@ func main() {
 	service := app.NewApp(cfg)
 	tgbot.Run(&ctx, service)
 
-	println(cfg)
+	forever := make(chan bool)
+	<-forever
 
 }

@@ -5,14 +5,21 @@ import (
 )
 
 type App struct {
-	Cfg      *config.Config
-	Message  chan string
-	Handlers interface{}
+	Cfg     *config.Config
+	Message chan Message
+	Command chan Message
+}
+
+type Message struct {
+	Type    string
+	Payload string
+	ChatID  int
 }
 
 func NewApp(cfg *config.Config) *App {
 	return &App{
 		Cfg:     cfg,
-		Message: make(chan string, 5),
+		Message: make(chan Message),
+		Command: make(chan Message),
 	}
 }
