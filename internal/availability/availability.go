@@ -3,10 +3,14 @@ package availability
 import (
 	"github.com/px2x/infrastructure-tg-notifier/config"
 	"net/http"
+	"strconv"
+	"time"
 )
 
-func CheckAvailability(url string) bool {
-	client := &http.Client{}
+func CheckAvailability(url string) (bool, int) {
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 	request, _ := http.NewRequest(
 		"GET",
 		url,
@@ -14,28 +18,31 @@ func CheckAvailability(url string) bool {
 
 	response, err := client.Do(request)
 	if err != nil {
-		return false
+		return false, 0
 	}
 
 	if response.StatusCode == 200 {
-		return true
+		return true, response.StatusCode
 	}
-	return false
+	return false, response.StatusCode
 
 }
 
 func CheckAvailabilityEnv(service *config.Services) string {
-	resultString := ""
+	resultString := "Проверили доступность сервисов!\n\n"
 	for _, env := range service.Env {
-
+		resultString += "Окружение: <strong>" + env.Name + "</strong>\n"
 		for _, link := range env.Link {
-			if CheckAvailability(link.Url) {
-
+			status, code := CheckAvailability(link.Url)
+			if status {
+				resultString += "✅"
 			} else {
-
+				resultString += "💩"
 			}
-
+			resultString += " - " + link.Url + " (" + strconv.Itoa(code) + ")"
+			resultString += "\n"
 		}
+		resultString += "\n"
 	}
 	return resultString
 }
