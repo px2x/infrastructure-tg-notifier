@@ -7,18 +7,18 @@ import (
 	"time"
 )
 
-func Run(ctx *context.Context, app2 *app.App) {
+func Run(ctx *context.Context, appCore *app.App) {
 	ticker := time.NewTicker(time.Duration(1) * time.Minute)
 	for {
 		select {
-		case command := <-app2.Command:
+		case command := <-appCore.Command:
 			if command.Type == "button_check_availability" {
-				result := availability.CheckAvailability(app2.Cfg.Services[0].Env[0].Link[0].Url)
+				result := availability.CheckAvailability(appCore.Cfg.Services[0].Env[0].Link[0].Url)
 				println(result)
 
-				app2.Message <- app.Message{
+				appCore.Message <- app.Message{
 					Type:    "response",
-					Payload: "Checked" + app2.Cfg.Services[0].Env[0].Link[0].Url,
+					Payload: "Checked" + appCore.Cfg.Services[0].Env[0].Link[0].Url,
 					ChatID:  command.ChatID,
 				}
 			}
