@@ -3,6 +3,7 @@ package tgbot
 import (
 	"context"
 	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 	"github.com/px2x/infrastructure-tg-notifier/internal/app"
 )
 
@@ -37,8 +38,10 @@ func Run(ctx *context.Context, app *app.App) {
 		for message := range app.Message {
 			if len(message.Payload) > 0 {
 				tgBot.SendMessage(*ctx, &bot.SendMessageParams{
-					ChatID: message.ChatID,
-					Text:   message.Payload,
+					ChatID:                message.ChatID,
+					Text:                  message.Payload,
+					ParseMode:             models.ParseModeHTML,
+					DisableWebPagePreview: true,
 				})
 			}
 		}

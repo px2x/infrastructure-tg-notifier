@@ -26,7 +26,7 @@ func Run(ctx *context.Context, appCore *app.App) {
 
 				appCore.Message <- app.Message{
 					Type:    "response",
-					Payload: "Checked" + appCore.Cfg.Services[0].Env[0].Link[0].Url,
+					Payload: result,
 					ChatID:  command.ChatID,
 				}
 			}
