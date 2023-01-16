@@ -1,6 +1,7 @@
 package availability
 
 import (
+	"github.com/px2x/infrastructure-tg-notifier/config"
 	"net/http"
 )
 
@@ -21,4 +22,20 @@ func CheckAvailability(url string) bool {
 	}
 	return false
 
+}
+
+func CheckAvailabilityEnv(service *config.Services) string {
+	resultString := ""
+	for _, env := range service.Env {
+
+		for _, link := range env.Link {
+			if CheckAvailability(link.Url) {
+
+			} else {
+
+			}
+
+		}
+	}
+	return resultString
 }
