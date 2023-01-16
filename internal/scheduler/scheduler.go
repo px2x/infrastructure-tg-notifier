@@ -6,6 +6,7 @@ import (
 	"github.com/px2x/infrastructure-tg-notifier/config"
 	"github.com/px2x/infrastructure-tg-notifier/internal/app"
 	"github.com/px2x/infrastructure-tg-notifier/internal/availability"
+	"github.com/px2x/infrastructure-tg-notifier/internal/sslchecker"
 	"time"
 )
 
@@ -18,12 +19,16 @@ func Run(ctx *context.Context, appCore *app.App) {
 				//todo handle error
 				service, _ := projectSeletor(appCore.Cfg.Services, command.ChatID)
 				result := availability.CheckAvailabilityEnv(service)
-
-				//result := true
-				//result := availability.CheckAvailability(appCore.Cfg.Services[0].Env[0].Link[0].Url)
-				println(result)
-				println(service)
-
+				appCore.Message <- app.Message{
+					Type:    "response",
+					Payload: result,
+					ChatID:  command.ChatID,
+				}
+			}
+			if command.Type == "button_check_ssl" {
+				//todo handle error
+				service, _ := projectSeletor(appCore.Cfg.Services, command.ChatID)
+				result := sslchecker.CheckSSLEnv(service)
 				appCore.Message <- app.Message{
 					Type:    "response",
 					Payload: result,
