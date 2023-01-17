@@ -15,7 +15,7 @@ type Link struct {
 
 type Services struct {
 	Name           string `yaml:"name"`
-	TelegramChatId string `yaml:"telegramChatId"`
+	TelegramChatId int    `yaml:"telegramChatId"`
 	SelectelAPIKey string `yaml:"selectelAPIKey"`
 	Env            []Env  `yaml:"envs"`
 }
