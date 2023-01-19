@@ -49,7 +49,11 @@ func (passer *DataPasser) checkHandler(ctx context.Context, b *bot.Bot, update *
 		InlineKeyboard: [][]models.InlineKeyboardButton{
 			{
 				{Text: "Биллинг хостера", CallbackData: "button_check_billing"},
+			},
+			{
 				{Text: "SSL серт", CallbackData: "button_check_ssl"},
+			},
+			{
 				{Text: "Доступность", CallbackData: "button_check_availability"},
 			},
 		},

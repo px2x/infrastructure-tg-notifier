@@ -27,7 +27,7 @@ func Run(ctx *context.Context, appCore *app.App) {
 					result, _ = sslchecker.CheckSSLEnv(service, false)
 				}
 				if command.Type == "button_check_billing" {
-					result = selectel.CheckBillingMessage(service.SelectelAPIKey)
+					result, _ = selectel.CheckBillingMessage(service, false)
 				}
 				appCore.Message <- app.Message{
 					Type:    "response",
@@ -48,6 +48,15 @@ func Run(ctx *context.Context, appCore *app.App) {
 				}
 
 				result, doSendReport = sslchecker.CheckSSLEnv(&appCore.Cfg.Services[key], true)
+				if doSendReport {
+					appCore.Message <- app.Message{
+						Type:    "response",
+						Payload: result,
+						ChatID:  appCore.Cfg.Services[key].TelegramChatId,
+					}
+				}
+
+				result, doSendReport = selectel.CheckBillingMessage(&appCore.Cfg.Services[key], true)
 				if doSendReport {
 					appCore.Message <- app.Message{
 						Type:    "response",
