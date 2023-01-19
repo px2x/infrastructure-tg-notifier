@@ -28,21 +28,36 @@ func CheckAvailability(url string) (bool, int) {
 
 }
 
-func CheckAvailabilityEnv(service *config.Services) string {
-	resultString := "Проверили доступность сервисов!\n\n"
-	for _, env := range service.Env {
-		resultString += "Окружение: <strong>" + env.Name + "</strong>\n"
-		for _, link := range env.Link {
-			status, code := CheckAvailability(link.Url)
-			if status {
-				resultString += "✅"
-			} else {
-				resultString += "💩"
+func CheckAvailabilityEnv(service *config.Services, isSchedulerCheck bool) (message string, doSendReport bool) {
+	firstString := "Проверили доступность сервисов!\n\n"
+	resultString := ""
+	doSendReport = false
+	result := true
+	if isSchedulerCheck == false || service.LastCheckSite.Add(service.CheckIntervalSite).Before(time.Now()) {
+		service.LastCheckSite = time.Now()
+		for _, env := range service.Env {
+			resultString += "Окружение: <strong>" + env.Name + "</strong>\n"
+			for _, link := range env.Link {
+				status, code := CheckAvailability(link.Url)
+				if status {
+					resultString += "✅"
+				} else {
+					resultString += "💩"
+					result = false
+				}
+				resultString += " - " + link.Url + " (" + strconv.Itoa(code) + ")"
+				resultString += "\n"
+
 			}
-			resultString += " - " + link.Url + " (" + strconv.Itoa(code) + ")"
 			resultString += "\n"
 		}
-		resultString += "\n"
+
 	}
-	return resultString
+
+	if result == false && isSchedulerCheck == true {
+		service.LastCheckSite = time.Now().Add(time.Duration(60) * time.Second)
+		firstString = "Буэнос диас нахуй!\n\nЕсть проблема с доступностью хостов!\n\n"
+		doSendReport = true
+	}
+	return firstString + resultString, doSendReport
 }
