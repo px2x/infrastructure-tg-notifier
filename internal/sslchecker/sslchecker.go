@@ -21,8 +21,8 @@ func CheckSSL(uri string) (bool, string) {
 	}
 	expiry := conn.ConnectionState().PeerCertificates[0].NotAfter
 	//fmt.Printf("Issuer: %s\nExpiry: %v\n", conn.ConnectionState().PeerCertificates[0].Issuer, expiry.Format(time.RFC850))
-	if time.Now().Before(expiry.Add(time.Duration(-24) * time.Hour)) {
-		return true, expiry.Format("2.1.2006")
+	if time.Now().Before(expiry.Add(time.Duration(-48) * time.Hour)) {
+		return true, "истекает " + expiry.Format("2.1.2006")
 	} else {
 		return false, expiry.Format("2.1.2006")
 	}
@@ -46,7 +46,7 @@ func CheckSSLEnv(service *config.Services, isSchedulerCheck bool) (message strin
 					resultString += "💩"
 					result = false
 				}
-				resultString += " - " + link.Url + "\n(истекает " + expiry + ")"
+				resultString += " - " + link.Url + "\n(" + expiry + ")"
 				resultString += "\n"
 
 			}
