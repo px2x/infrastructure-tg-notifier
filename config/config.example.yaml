@@ -8,6 +8,7 @@ services:
       checkIntervalSSL: 1m
       checkIntervalSite: 10s
       checkIntervalSelectelBilling: 1m
+      muteTimeAfterError: 5m
     envs:
       - name: prod
         links:
