@@ -2,7 +2,6 @@ package sslchecker
 
 import (
 	"crypto/tls"
-	"fmt"
 	"github.com/px2x/infrastructure-tg-notifier/config"
 	"net/url"
 	"time"
@@ -21,7 +20,7 @@ func CheckSSL(uri string) (bool, string) {
 		return false, "no SSL"
 	}
 	expiry := conn.ConnectionState().PeerCertificates[0].NotAfter
-	fmt.Printf("Issuer: %s\nExpiry: %v\n", conn.ConnectionState().PeerCertificates[0].Issuer, expiry.Format(time.RFC850))
+	//fmt.Printf("Issuer: %s\nExpiry: %v\n", conn.ConnectionState().PeerCertificates[0].Issuer, expiry.Format(time.RFC850))
 	if time.Now().Before(expiry) {
 		return true, expiry.Format("2.1.2006")
 	} else {
@@ -30,21 +29,37 @@ func CheckSSL(uri string) (bool, string) {
 
 }
 
-func CheckSSLEnv(service *config.Services) string {
-	resultString := "Проверили SSL сервисов!\n\n"
-	for _, env := range service.Env {
-		resultString += "Окружение: <strong>" + env.Name + "</strong>\n"
-		for _, link := range env.Link {
-			status, expiry := CheckSSL(link.Url)
-			if status {
-				resultString += "✅"
-			} else {
-				resultString += "💩"
+func CheckSSLEnv(service *config.Services, isSchedulerCheck bool) (message string, doSendReport bool) {
+	firstString := "Проверили SSL сервисов!\n\n"
+	resultString := ""
+	doSendReport = false
+	result := true
+	if isSchedulerCheck == false || service.LastCheckSSL.Add(service.CheckIntervalSSL).Before(time.Now()) {
+		service.LastCheckSSL = time.Now()
+		for _, env := range service.Env {
+			resultString += "Окружение: <strong>" + env.Name + "</strong>\n"
+			for _, link := range env.Link {
+				status, expiry := CheckSSL(link.Url)
+				if status {
+					resultString += "✅"
+				} else {
+					resultString += "💩"
+					result = false
+				}
+				resultString += " - " + link.Url + " (" + expiry + ")"
+				resultString += "\n"
+
 			}
-			resultString += " - " + link.Url + " (" + expiry + ")"
 			resultString += "\n"
 		}
-		resultString += "\n"
+
 	}
-	return resultString
+
+	if result == false && isSchedulerCheck == true {
+		service.LastCheckSSL = time.Now().Add(service.MuteTimeAfterError)
+		//service.LastCheckSSL = time.Now().Add(time.Duration(120) * time.Second)
+		firstString = "Досиделись блэть?!\n\nПора обновить протухшие SSL!\n\n"
+		doSendReport = true
+	}
+	return firstString + resultString, doSendReport
 }

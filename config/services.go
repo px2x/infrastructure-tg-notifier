@@ -18,6 +18,7 @@ type Services struct {
 	CheckIntervalSSL             time.Duration `yaml:"checkIntervalSSL"`
 	CheckIntervalSite            time.Duration `yaml:"checkIntervalSite"`
 	CheckIntervalSelectelBilling time.Duration `yaml:"checkIntervalSelectelBilling"`
+	MuteTimeAfterError           time.Duration `yaml:"muteTimeAfterError"`
 	LastCheckBilling             time.Time
 	LastCheckSSL                 time.Time
 	LastCheckSite                time.Time

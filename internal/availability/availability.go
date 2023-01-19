@@ -55,7 +55,8 @@ func CheckAvailabilityEnv(service *config.Services, isSchedulerCheck bool) (mess
 	}
 
 	if result == false && isSchedulerCheck == true {
-		service.LastCheckSite = time.Now().Add(time.Duration(60) * time.Second)
+		service.LastCheckSite = time.Now().Add(service.MuteTimeAfterError)
+		//service.LastCheckSite = time.Now().Add(time.Duration(120) * time.Second)
 		firstString = "Буэнос диас нахуй!\n\nЕсть проблема с доступностью хостов!\n\n"
 		doSendReport = true
 	}

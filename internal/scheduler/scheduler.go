@@ -24,7 +24,7 @@ func Run(ctx *context.Context, appCore *app.App) {
 					result, _ = availability.CheckAvailabilityEnv(service, false)
 				}
 				if command.Type == "button_check_ssl" {
-					result = sslchecker.CheckSSLEnv(service)
+					result, _ = sslchecker.CheckSSLEnv(service, false)
 				}
 				if command.Type == "button_check_billing" {
 					result = selectel.CheckBillingMessage(service.SelectelAPIKey)
@@ -39,6 +39,15 @@ func Run(ctx *context.Context, appCore *app.App) {
 		case <-ticker.C:
 			for key, _ := range appCore.Cfg.Services {
 				result, doSendReport := availability.CheckAvailabilityEnv(&appCore.Cfg.Services[key], true)
+				if doSendReport {
+					appCore.Message <- app.Message{
+						Type:    "response",
+						Payload: result,
+						ChatID:  appCore.Cfg.Services[key].TelegramChatId,
+					}
+				}
+
+				result, doSendReport = sslchecker.CheckSSLEnv(&appCore.Cfg.Services[key], true)
 				if doSendReport {
 					appCore.Message <- app.Message{
 						Type:    "response",
