@@ -21,7 +21,7 @@ func CheckSSL(uri string) (bool, string) {
 	}
 	expiry := conn.ConnectionState().PeerCertificates[0].NotAfter
 	//fmt.Printf("Issuer: %s\nExpiry: %v\n", conn.ConnectionState().PeerCertificates[0].Issuer, expiry.Format(time.RFC850))
-	if time.Now().Before(expiry) {
+	if time.Now().Before(expiry.Add(time.Duration(-24) * time.Hour)) {
 		return true, expiry.Format("2.1.2006")
 	} else {
 		return false, expiry.Format("2.1.2006")
@@ -46,7 +46,7 @@ func CheckSSLEnv(service *config.Services, isSchedulerCheck bool) (message strin
 					resultString += "💩"
 					result = false
 				}
-				resultString += " - " + link.Url + " (" + expiry + ")"
+				resultString += " - " + link.Url + "\n(истекает " + expiry + ")"
 				resultString += "\n"
 
 			}
@@ -58,7 +58,8 @@ func CheckSSLEnv(service *config.Services, isSchedulerCheck bool) (message strin
 	if result == false && isSchedulerCheck == true {
 		service.LastCheckSSL = time.Now().Add(service.MuteTimeAfterError)
 		//service.LastCheckSSL = time.Now().Add(time.Duration(120) * time.Second)
-		firstString = "Досиделись блэть?!\n\nПора обновить протухшие SSL!\n\n"
+		firstString = "Досиделись блэть?!\n\nПора обновить почти протухшие SSL!\n" +
+			"или там вообще уже нет SSL - предприми что нибудь! 🤬\n\n"
 		doSendReport = true
 	}
 	return firstString + resultString, doSendReport
