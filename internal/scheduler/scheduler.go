@@ -19,19 +19,21 @@ func Run(ctx *context.Context, appCore *app.App) {
 			result := ""
 			//todo handle error
 			service, _ := projectSeletor(appCore.Cfg, command.ChatID)
-			if command.Type == "button_check_availability" {
-				result, _ = availability.CheckAvailabilityEnv(service, false)
-			}
-			if command.Type == "button_check_ssl" {
-				result = sslchecker.CheckSSLEnv(service)
-			}
-			if command.Type == "button_check_billing" {
-				result = selectel.CheckBillingMessage(service.SelectelAPIKey)
-			}
-			appCore.Message <- app.Message{
-				Type:    "response",
-				Payload: result,
-				ChatID:  command.ChatID,
+			if service != nil {
+				if command.Type == "button_check_availability" {
+					result, _ = availability.CheckAvailabilityEnv(service, false)
+				}
+				if command.Type == "button_check_ssl" {
+					result = sslchecker.CheckSSLEnv(service)
+				}
+				if command.Type == "button_check_billing" {
+					result = selectel.CheckBillingMessage(service.SelectelAPIKey)
+				}
+				appCore.Message <- app.Message{
+					Type:    "response",
+					Payload: result,
+					ChatID:  command.ChatID,
+				}
 			}
 
 		case <-ticker.C:
