@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  she-tg-notifier:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+   # volumes:
+   #   - ./config:/app/confi
+    restart: "always"
+#    entrypoint: ./service

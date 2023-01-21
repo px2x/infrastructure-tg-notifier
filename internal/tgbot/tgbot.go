@@ -5,6 +5,7 @@ import (
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/px2x/infrastructure-tg-notifier/internal/app"
+	"regexp"
 )
 
 type DataPasser struct {
@@ -19,8 +20,9 @@ func Run(ctx *context.Context, app *app.App) {
 	opts := []bot.Option{
 		bot.WithDefaultHandler(passer.defaultHandler),
 		bot.WithMessageTextHandler("/help", bot.MatchTypeExact, passer.helpHandler),
-		bot.WithMessageTextHandler("/check", bot.MatchTypeExact, passer.checkHandler),
+		bot.WithMessageTextHandler("/start", bot.MatchTypeExact, passer.checkHandler),
 		bot.WithMessageTextHandler("/getid", bot.MatchTypeExact, passer.getIdHandler),
+		//bot.WithMessageTextHandler("повезет ли нам?", bot.MatchTypeExact, passer.luckHandler),
 		bot.WithCallbackQueryDataHandler("button_check_", bot.MatchTypePrefix, passer.callbackCheckHandler),
 		bot.WithMiddlewares(passer.logMessageMiddleware),
 	}
@@ -30,7 +32,7 @@ func Run(ctx *context.Context, app *app.App) {
 		panic(err)
 	}
 
-	//tgBot.RegisterHandler(bot.HandlerTypeMessageText, "/help", bot.MatchTypeExact, helpHandler)
+	tgBot.RegisterHandlerRegexp(bot.HandlerTypeMessageText, regexp.MustCompile(`(?m)повезет ли нам`), passer.luckHandler)
 
 	go tgBot.Start(*ctx)
 

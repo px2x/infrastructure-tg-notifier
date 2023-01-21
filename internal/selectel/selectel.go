@@ -3,10 +3,12 @@ package selectel
 import (
 	"encoding/json"
 	"github.com/bojanz/currency"
+	"github.com/px2x/infrastructure-tg-notifier/config"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type billingResponse struct {
@@ -78,13 +80,32 @@ func checkBilling(apiKey string) (primary int, vpc int, storage int) {
 	return data.Data.Primary.Main, data.Data.Vpc.Main, data.Data.Storage.Main
 }
 
-func CheckBillingMessage(apiKey string) string {
-	primary, vpc, storage := checkBilling(apiKey)
-	resultString := "Биллинг Selectel\n\n" +
-		setIndicator(vpc, 2000) + " Облачная платформа: " + converCurrency(vpc) + "\n" +
-		setIndicator(storage, 500) + " Хранилище: " + converCurrency(storage) + "\n" +
-		setIndicator(primary, 1000) + " Основной баланс: " + converCurrency(primary)
-	return resultString
+func CheckBillingMessage(service *config.Services, isSchedulerCheck bool) (message string, doSendReport bool) {
+	firstString := "Проверили биллинг!\n\n"
+	resultString := ""
+	doSendReport = false
+	result := true
+
+	if isSchedulerCheck == false || service.LastCheckBilling.Add(service.CheckIntervalSelectelBilling).Before(time.Now()) {
+		service.LastCheckBilling = time.Now()
+		primary, vpc, storage := checkBilling(service.SelectelAPIKey)
+		indicatorVpc, statusVpc := setIndicator(vpc, 2000)
+		indicatorStorage, statusStorage := setIndicator(storage, 500)
+		indicatorPrimary, statusPrimary := setIndicator(primary, 1000)
+		resultString = "" +
+			indicatorVpc + " Облачная платформа: " + converCurrency(vpc) + "\n" +
+			indicatorStorage + " Хранилище: " + converCurrency(storage) + "\n" +
+			indicatorPrimary + " Основной баланс: " + converCurrency(primary)
+		result = statusVpc && statusStorage && statusPrimary
+	}
+
+	if result == false && isSchedulerCheck == true {
+		service.LastCheckBilling = time.Now().Add(service.MuteTimeAfterError)
+		firstString = "Ни Хао!\n\nПредложение финансового характера - пополнить казну!\n\n"
+		doSendReport = true
+	}
+
+	return firstString + resultString, doSendReport
 }
 
 func converCurrency(value int) string {
@@ -95,13 +116,13 @@ func converCurrency(value int) string {
 	return formatter.Format(amount)
 }
 
-func setIndicator(value int, limit int) string {
+func setIndicator(value int, limit int) (string, bool) {
 	if value/100 < 0 {
-		return "🔴"
+		return "🔴", false
 	}
 	if value/100 < limit {
-		return "\U0001F7E0"
+		return "\U0001F7E0", false
 	} else {
-		return "\U0001F7E2"
+		return "\U0001F7E2", true
 	}
 }

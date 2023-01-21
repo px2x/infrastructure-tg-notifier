@@ -1,0 +1,41 @@
+image: docker
+
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  SERVICE_NAME: veip-notice-service
+
+before_script:
+  - export RELEASE_VERSION=$(echo $CI_BUILD_REF_NAME | grep -o '[[:digit:]]\{1,5\}\.[[:digit:]]\{1,5\}\.[[:digit:]]\{1,5\}' || echo development)
+  - export BUILD_VERSION=build-${CI_PIPELINE_IID}
+  - export RELEASE_VERSION_FOR_COMMIT_TO_MASTER=v$(echo $CI_COMMIT_TITLE | grep -o '[[:digit:]]\{1,5\}\.[[:digit:]]\{1,5\}\.[[:digit:]]\{1,5\}')
+
+
+stages:
+  - build
+  - deploy
+  - release
+
+
+build_rc:
+  stage: build
+  services:
+    - docker:dind
+  only:
+    refs:
+      - /^release\/.*$/
+  script:
+    - docker login -u "gitlab-ci-token" -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -f ./docker/Dockerfile -t $CI_REGISTRY_IMAGE:${RELEASE_VERSION}-${BUILD_VERSION} .
+    - docker push $CI_REGISTRY_IMAGE:${RELEASE_VERSION}-${BUILD_VERSION}
+
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "master" && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TITLE =~ /.*[Rr]elease\/v\d+\.\d+\.\d+.*/'
+  script:
+    - echo $RELEASE_VERSION_FOR_COMMIT_TO_MASTER
+    - release-cli create --description "$RELEASE_VERSION_FOR_COMMIT_TO_MASTER" --tag-name "$RELEASE_VERSION_FOR_COMMIT_TO_MASTER" --ref "$CI_COMMIT_SHA"
